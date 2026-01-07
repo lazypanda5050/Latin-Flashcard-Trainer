@@ -11,7 +11,7 @@ A tool for managing and converting Latin vocabulary for flashcard study. This pr
 
 ## Usage
 
-View the website (here)[https://lazypanda5050.github.io/Latin-Flashcard-Trainer]
+View the website [here](https://lazypanda5050.github.io/Latin-Flashcard-Trainer)
 
 ### Converting Vocabulary
 
