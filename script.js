@@ -103,6 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function showCard() {
+        // Update progress immediately when showing a new card
+        updateProgress();
+
         if (currentIndex >= currentChapterWords.length) {
             finishQuiz();
             return;
@@ -162,7 +165,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             userInputs.forEach((input, index) => {
                 const val = input.value.trim().toLowerCase();
-                if (val !== targetParts[index]) {
+                const target = targetParts[index];
+                
+                // Allow optional hyphen if target starts with it
+                // e.g. target "-o", user "o" -> correct
+                const match = (val === target) || (target.startsWith('-') && val === target.substring(1));
+
+                if (!match) {
                     allPartsCorrect = false;
                     incorrectIndices.push(index + 1);
                     input.style.borderColor = 'red';
@@ -179,6 +188,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 3. POS
         let targetPos = word.pos ? word.pos.trim().toLowerCase() : "";
+        
+        // Detect if it's a Chant
+        // Heuristic: Translation contains "Chant" OR latin starts with "-"
+        if (word.translation.toLowerCase().includes('chant') || (targetPos === "" && word.latin.startsWith('-'))) {
+            targetPos = "chant";
+        }
+
         let userPosValue = userPos.toLowerCase();
         let isPosCorrect = false;
 
@@ -189,16 +205,10 @@ document.addEventListener('DOMContentLoaded', () => {
                  'adverb': ['adv'],
                  'preposition': ['prep'],
                  'conjunction': ['conj'],
-                 // Add others if necessary, though noun/verb usually spelled out
              };
 
-             // Search for the user's term OR any known aliases
-             // e.g. "adverb" -> search for "adverb" OR "adv"
              let searchTerms = aliases[userPosValue] ? [userPosValue, ...aliases[userPosValue]] : [userPosValue];
              
-             // Create a regex pattern that matches any of the terms as a whole word
-             // \b matches boundary between word char (\w) and non-word char (\W)
-             // "adv." contains "adv" followed by "." (\W), so \badv\b matches it.
              const pattern = `\\b(${searchTerms.join('|')})\\b`;
              const regex = new RegExp(pattern, 'i');
              
@@ -242,16 +252,56 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function updateProgress() {
-        const percent = (currentIndex / currentChapterWords.length) * 100;
+        const displayIndex = Math.min(currentIndex, currentChapterWords.length);
+        const percent = (displayIndex / currentChapterWords.length) * 100;
         progressBar.style.width = `${percent}%`;
-        progressText.textContent = `Word ${currentIndex + 1} of ${currentChapterWords.length}`;
+        progressText.textContent = `Word ${displayIndex} of ${currentChapterWords.length}`;
     }
 
     function finishQuiz() {
-        quizArea.innerHTML = `
+        // Hide game elements
+        document.querySelector('.progress-container').style.display = 'none';
+        document.getElementById('progress-text').style.display = 'none';
+        document.querySelector('.question-box').style.display = 'none';
+        document.querySelector('.input-group').style.display = 'none';
+        document.querySelector('.controls').style.display = 'none';
+        
+        // Explicitly hide feedback area
+        feedbackArea.style.display = 'none';
+
+        // Create or show results
+        let results = document.getElementById('results-area');
+        if (!results) {
+            results = document.createElement('div');
+            results.id = 'results-area';
+            results.style.textAlign = 'center';
+            quizArea.appendChild(results);
+        }
+        results.innerHTML = `
             <h2>Quiz Complete!</h2>
             <p>Your Score: ${score} / ${currentChapterWords.length}</p>
-            <button onclick="location.reload()">Back to Menu</button>
+            <div style="margin-top: 20px;">
+                <button id="retry-btn">Try Again</button>
+                <button onclick="location.reload()" style="margin-left: 10px; background-color: #7f8c8d;">Back to Menu</button>
+            </div>
         `;
+        results.style.display = 'block';
+
+        document.getElementById('retry-btn').onclick = () => {
+            results.style.display = 'none';
+            // Show game elements
+            document.querySelector('.progress-container').style.display = 'block';
+            document.getElementById('progress-text').style.display = 'block';
+            document.querySelector('.question-box').style.display = 'block';
+            document.querySelector('.input-group').style.display = 'flex';
+            document.querySelector('.controls').style.display = 'flex';
+            
+            // Reset state
+            currentChapterWords.sort(() => Math.random() - 0.5);
+            currentIndex = 0;
+            score = 0;
+            updateProgress();
+            showCard();
+        };
     }
 });
