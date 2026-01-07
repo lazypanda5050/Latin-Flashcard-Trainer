@@ -87,7 +87,8 @@ def main():
         if line.upper().startswith("CHAPTER"):
             if current_chapter:
                 chapters.append(current_chapter)
-            chapter_title = re.sub(r'\bONE\b', '1', line, flags=re.IGNORECASE)
+            chapter_title = re.sub(r'\bCHAPTER\b', 'Chapter', line, flags=re.IGNORECASE)
+            chapter_title = re.sub(r'\bONE\b', '1', chapter_title, flags=re.IGNORECASE)
             chapter_title = re.sub(r'\bTWO\b', '2', chapter_title, flags=re.IGNORECASE)
             chapter_title = re.sub(r'\bTHREE\b', '3', chapter_title, flags=re.IGNORECASE)
             chapter_title = re.sub(r'\bFOUR\b', '4', chapter_title, flags=re.IGNORECASE)
@@ -144,7 +145,7 @@ def main():
     compressed_file = os.path.join(SCRIPT_DIR, '..', 'data.js')
     with open(compressed_file, 'w', encoding='utf-8') as f:
         f.write('var wordsData = ')
-        json.dump(chapters, f, ensure_ascii=False)
+        json.dump(chapters, f, ensure_ascii=True)
         f.write(';')
         
     print(f"Converted {len(chapters)} chapters.")
