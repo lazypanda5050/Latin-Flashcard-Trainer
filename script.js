@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('next-btn');
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
 
     let currentChapterWords = [];
     let currentIndex = 0;
@@ -21,6 +22,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastFocusedInput = null;
 
     console.log("Script loaded and DOM content ready.");
+
+    // Dark Mode Toggle
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.textContent = '☀️';
+    }
+
+    darkModeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isNowDark = document.body.classList.contains('dark-mode');
+        darkModeToggle.textContent = isNowDark ? '☀️' : '🌙';
+        localStorage.setItem('darkMode', isNowDark);
+    });
 
     // Initialize Chapters
     if (typeof wordsData !== 'undefined') {
