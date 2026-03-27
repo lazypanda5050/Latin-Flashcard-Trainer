@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('next-btn');
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
 
     let currentChapterWords = [];
     let currentIndex = 0;
@@ -21,6 +22,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastFocusedInput = null;
 
     console.log("Script loaded and DOM content ready.");
+
+    // Dark Mode Toggle
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.textContent = '☀️';
+    }
+
+    darkModeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isNowDark = document.body.classList.contains('dark-mode');
+        darkModeToggle.textContent = isNowDark ? '☀️' : '🌙';
+        localStorage.setItem('darkMode', isNowDark);
+    });
 
     // Initialize Chapters
     if (typeof wordsData !== 'undefined') {
@@ -44,6 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
         'A': 'Ā', 'E': 'Ē', 'I': 'Ī', 'O': 'Ō', 'U': 'Ū'
     };
 
+    const capitalToMacron = {
+        'A': 'ā', 'E': 'ē', 'I': 'ī', 'O': 'ō', 'U': 'ū'
+    };
+
     function addMacronSupport(inputElement) {
         inputElement.addEventListener('input', (e) => {
             let val = e.target.value;
@@ -55,12 +74,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 val = val.replaceAll(`(${key})`, char);
             }
 
+            for (const [cap, macron] of Object.entries(capitalToMacron)) {
+                val = val.replaceAll(cap, macron);
+            }
+
             if (val !== original) {
                 const start = e.target.selectionStart;
-                const end = e.target.selectionEnd;
                 e.target.value = val;
-                // Adjust cursor position: replaced 3 chars `(a)` with 1 `ā`, so shift back 2
-                e.target.setSelectionRange(start - 2, end - 2);
+                
+                const lenDiff = original.length - val.length;
+                const newPos = Math.max(0, start - lenDiff);
+                e.target.setSelectionRange(newPos, newPos);
             }
         });
 
