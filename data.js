@@ -1274,7 +1274,7 @@ var wordsData = [
       {
         latin: "n\u0101vis, n\u0101vis",
         translation: "ship",
-        pos: "3rd declension i-stem noun",
+        pos: "noun",
         gender: "f.",
       },
       {
